@@ -1,7 +1,6 @@
 {
   "name": "gulp-jsdependency",
   "version": "1.0.0",
-  "private": true,
   "devDependencies": {},
   "dependencies": {
     "gulp-util": "^3.0.3",

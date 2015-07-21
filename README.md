@@ -1,0 +1,1 @@
+﻿It helps you manage file dependences and separates your javascript code into clean independent modules.
