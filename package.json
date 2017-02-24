@@ -1,9 +1,20 @@
 {
-  "name": "gulp-jsdependency",
-  "version": "1.0.0",
-  "devDependencies": {},
+  "name": "track-server",
+  "version": "0.0.1",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "./node_modules/.bin/pm2 start ./build/app.js --watch --name \"track-server\"",
+    "stop": "./node_modules/.bin/pm2 stop track-server --watch",
+    "dev": "./node_modules/.bin/tsc --watch"
+  },
+  "devDependencies": {
+    "@types/socket.io": "^1.4.28",
+    "pm2": "^2.4.0",
+    "typedoc": "^0.5.7",
+    "typescript": "^2.2.1"
+  },
   "dependencies": {
-    "gulp-util": "^3.0.3",
-    "through2": "^0.6.3"
+    "@types/socket.io": "^1.4.28",
+    "socket.io": "^1.7.3"
   }
 }
