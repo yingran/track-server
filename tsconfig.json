@@ -4,9 +4,9 @@
         "sourceMap": true,
         "noImplicitAny": true,
         "module": "commonjs",
-        "target": "es2015",
+        "target": "es2016",
         "experimentalDecorators": true,
-        "lib": ["scripthost", "es2015"]
+        "lib": ["scripthost", "es2016"]
     },
     "include": [
         "./src/*.ts",
