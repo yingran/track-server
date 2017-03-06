@@ -123,8 +123,9 @@ export default class Room {
     }
 
     public enterGame() {
-        this.administrator.socket.emit( EVENT_ENTER_GAME );
-        this.administrator.socket.to( this.name ).emit( EVENT_ENTER_GAME );
+        let playerData = JSON.stringify( this._getPlayerListData() );
+        this.administrator.socket.emit( EVENT_ENTER_GAME, playerData );
+        this.administrator.socket.to( this.name ).emit( EVENT_ENTER_GAME, playerData );
     }
 
     

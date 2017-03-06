@@ -35,6 +35,7 @@ io.on( "connection", ( socket: SocketIO.Socket )=> {
     socket.on( EVENT_CREATE_PLAYER, ( data: any )=> {
         data = JSON.parse( data );
         player = new Player( socket, data["id"], data["name"] );
+        game.player = player.id;
     });
 
     socket.on( EVENT_ENTER_HALL, ( data: any )=> {
@@ -45,6 +46,7 @@ io.on( "connection", ( socket: SocketIO.Socket )=> {
         room = new Room();
         player.joinRoom( room.name );
         room.addPlayer( player );
+        game.room = room.name;
     });
 
     socket.on( EVENT_JOIN_ROOM, ( data: any )=> {
@@ -52,6 +54,7 @@ io.on( "connection", ( socket: SocketIO.Socket )=> {
         room = Room.getRoomByName( data.room );
         player.joinRoom( room.name );
         room.addPlayer( player );
+        game.room = room.name;
     });
 
     socket.on( EVENT_LEAVE_ROOM, ( data: any )=> {
@@ -61,13 +64,14 @@ io.on( "connection", ( socket: SocketIO.Socket )=> {
             player.leaveRoom();
             room.removePlayer( player );
             room = null;
+            game.room = null;
         }
     });
 
     socket.on( EVENT_ENTER_GAME, ( data: any ) => {
         if ( room && room.administrator && player.id === room.administrator.id ) {
             room.enterGame();
-            game.ready( player.id, room.name );
+            game.ready();
         }
     });
 });

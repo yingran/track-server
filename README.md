@@ -1,4 +1,4 @@
 ﻿Track Server.
 
-1. `npm run dev` start develop server.
-2. `npm start` start server.
+- `npm run dev` start develop server.
+- `npm start` start server.

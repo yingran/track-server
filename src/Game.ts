@@ -1,7 +1,7 @@
 import {
     EVENT_COUNTDOWN,
     EVENT_START_GAME,
-    EVENT_PLAY_OPERATION
+    EVENT_PLAYER_ACTION
 } from "./Const";
 
 /**
@@ -21,22 +21,27 @@ export default class Game {
     constructor( socket: SocketIO.Socket ) {
         this.socket = socket;
 
-        this.socket.on( EVENT_PLAY_OPERATION, ( data: any ) => {
-            if ( !this.room ) {
-                return;
-            }
-            data = JSON.parse( data );
-            data = Object.apply( {
-                "player": this.player
-            }, data );
-            this.socket.to( this.room ).emit( EVENT_PLAY_OPERATION, JSON.stringify( data) );
+        this.socket.on( EVENT_PLAYER_ACTION, ( data: any ) => {
+            this._handlePlayerAction( data );
         });
     }
 
-    public ready( player: string, room: string ) {
-        this.room = room;
-        this.player = player;
+    private _handlePlayerAction( data: any ) {
+        if ( !this.room ) {
+            return;
+        }
+        data = JSON.parse( data );
+        data = Object.assign( {
+            "player": this.player
+        }, data );
+        this.socket.to( this.room ).emit( EVENT_PLAYER_ACTION, JSON.stringify( data) );
+    }
 
+    /**
+     * 准备开始游戏
+     * @description 房主触发，之后的countdown，start等需要进行房间广播
+     */
+    public ready() {
         this.countdown();
     }
 
@@ -44,9 +49,11 @@ export default class Game {
         let count = 5;
         let interval = setInterval( ()=> {
             if ( count > 0 ) {
-                this.socket.emit( EVENT_COUNTDOWN, JSON.stringify( {
+                let countData = JSON.stringify( {
                     "count": count
-                } ) );
+                } );
+                this.socket.emit( EVENT_COUNTDOWN, countData );
+                this.socket.to( this.room ).emit( EVENT_COUNTDOWN, countData );
                 count--;
             } else {
                 clearInterval( interval );
@@ -56,6 +63,8 @@ export default class Game {
     }
 
     public start() {
-        this.socket.emit( EVENT_START_GAME, JSON.stringify( {} ) );
+        let data = JSON.stringify( {} );
+        this.socket.emit( EVENT_START_GAME, data );
+        this.socket.to( this.room ).emit( EVENT_START_GAME, data );
     }
 }
