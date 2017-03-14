@@ -27,6 +27,7 @@ export default class Room {
     readonly name: string;
     public administrator: Player;
     public players: any;
+    public static MAX_PLAYER_COUNT: number = 5;
 
     constructor() {
         this.name = this._getName();
@@ -56,11 +57,10 @@ export default class Room {
     private _destroy( socket: SocketIO.Socket ) {
         _nextNameIndex = Number.parseInt( this.name.replace( /^ROOM_(\d)+$/gi, "$1" ) );
         delete _rooms[ this.name ];
-        let dataRooms = JSON.stringify( Room.getRoomList() );
-        socket.to( NAME_HALL ).emit( EVENT_ROOM_LIST, dataRooms );
-        socket.emit( EVENT_ROOM_LIST, dataRooms );
+        Room.emitRoomList( socket );
         this._revokeAdministrator();
     }
+    
 
     private _getPlayerListData(): Array<any> {
         let players = this.players;
@@ -91,6 +91,16 @@ export default class Room {
         return data;
     }
 
+    public static emitRoomList( socket: SocketIO.Socket ): void {
+        let dataRooms = JSON.stringify( Room.getRoomList() );
+        socket.to( NAME_HALL ).emit( EVENT_ROOM_LIST, dataRooms );
+        socket.emit( EVENT_ROOM_LIST, dataRooms );
+    }
+
+    public getPlayerCount (): number {
+        return this._getPlayerListData().length;
+    }
+
     public addPlayer( player: Player ) {
         let dataPlayers: string;
         if ( this._isEmpty() || this.administrator.id === player.id ) {
@@ -103,6 +113,9 @@ export default class Room {
         dataPlayers = JSON.stringify( this._getPlayerListData() );
         player.socket.emit( EVENT_PLAYER_LIST, dataPlayers );
         player.socket.to( this.name ).emit( EVENT_PLAYER_LIST, dataPlayers );
+        if ( this.getPlayerCount() >= Room.MAX_PLAYER_COUNT ) {            
+            Room.emitRoomList( player.socket );
+        }
     }
 
     public removePlayer( player: Player ) {
@@ -119,14 +132,20 @@ export default class Room {
                 }
                 this.administrator.socket.emit( EVENT_ASSIGN_ADMINISTRATOR );
             }
+            if ( this.getPlayerCount() === ( Room.MAX_PLAYER_COUNT - 1 ) ) {            
+                Room.emitRoomList( player.socket );
+            }
         }
     }
 
     public enterGame() {
+        let players = this.players;
         let playerData = JSON.stringify( this._getPlayerListData() );
         this.administrator.socket.emit( EVENT_ENTER_GAME, playerData );
         this.administrator.socket.to( this.name ).emit( EVENT_ENTER_GAME, playerData );
-    }
-
-    
+        
+        for ( let key in players ) {
+            players[ key ].enterGame();
+        }
+    }    
 }

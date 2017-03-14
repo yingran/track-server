@@ -15,6 +15,8 @@ import {
     EVENT_LEAVE_ROOM,
 
     EVENT_ENTER_GAME,
+    EVENT_FINISH_GAME,
+    EVENT_GAME_OVER,
 
     NAME_HALL
 } from "./Const";
@@ -74,6 +76,30 @@ io.on( "connection", ( socket: SocketIO.Socket )=> {
             game.ready();
         }
     });
+
+    socket.on( EVENT_FINISH_GAME, ( data: any ) => {
+        let players = room.players;
+        let over: boolean = true;
+        player.finishGame();
+        for ( let key in players ) {
+            if ( players[ key ].state === Player.STATE_PLAYING ) {
+                over = false;
+            }
+        }
+        if ( over ) {
+            setTimeout( ()=> {
+                game.over();
+            }, 3000 );
+        }
+    });
+
+    socket.on( "disconnect", ( data: any ) => {
+        player.leaveRoom();
+        room.removePlayer( player );
+        player = null;
+        room = null;
+        game.room = null;
+    });
 });
 
-server.listen( 8081 );
+server.listen( 8002 );

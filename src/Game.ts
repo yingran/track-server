@@ -1,7 +1,10 @@
 import {
     EVENT_COUNTDOWN,
     EVENT_START_GAME,
-    EVENT_PLAYER_ACTION
+    EVENT_FINISH_GAME,
+    EVENT_GAME_OVER,
+    EVENT_PLAYER_ACTION,
+    EVENT_RANK_LIST
 } from "./Const";
 
 /**
@@ -24,6 +27,10 @@ export default class Game {
         this.socket.on( EVENT_PLAYER_ACTION, ( data: any ) => {
             this._handlePlayerAction( data );
         });
+
+        this.socket.on( EVENT_FINISH_GAME, ( data: any ) => {
+            this._handleFinishGame( data );
+        });
     }
 
     private _handlePlayerAction( data: any ) {
@@ -34,7 +41,15 @@ export default class Game {
         data = Object.assign( {
             "player": this.player
         }, data );
-        this.socket.to( this.room ).emit( EVENT_PLAYER_ACTION, JSON.stringify( data) );
+        data = JSON.stringify( data);
+        this.socket.emit( EVENT_PLAYER_ACTION, data );
+        this.socket.to( this.room ).emit( EVENT_PLAYER_ACTION, data );
+    }
+
+    private _handleFinishGame( data: any ) {
+        data = JSON.parse( data );
+        this.socket.emit( EVENT_FINISH_GAME, JSON.stringify( data ) );
+        this.socket.to( this.room ).emit( EVENT_FINISH_GAME, JSON.stringify( data ) );
     }
 
     /**
@@ -67,4 +82,10 @@ export default class Game {
         this.socket.emit( EVENT_START_GAME, data );
         this.socket.to( this.room ).emit( EVENT_START_GAME, data );
     }
+
+    public over() {
+        this.socket.emit( EVENT_GAME_OVER );
+        this.socket.to( this.room ).emit( EVENT_GAME_OVER );
+    }
+    
 }
